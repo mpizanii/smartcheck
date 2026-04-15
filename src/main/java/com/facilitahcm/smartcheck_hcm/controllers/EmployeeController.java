@@ -13,7 +13,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/employee")
+@RequestMapping("/api/employees")
 public class EmployeeController {
     private final EmployeeService employeeService;
 
@@ -21,6 +21,7 @@ public class EmployeeController {
     public EmployeeController(EmployeeService employeeService){
         this.employeeService = employeeService;
     }
+    
     @PostMapping
     public ResponseEntity<EmployeeResponseDTO> cadastrarFuncionario(@Valid @RequestBody EmployeeRequestDTO employeeRequest){
         EmployeeResponseDTO response = employeeService.criarEmployee(employeeRequest);
@@ -36,6 +37,12 @@ public class EmployeeController {
     @GetMapping
     public ResponseEntity<List<EmployeeResponseDTO>> buscarFuncionarios(){
         List<EmployeeResponseDTO> response = employeeService.buscarEmployees();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/workplaces/{workplaceId}")
+    public ResponseEntity<List<EmployeeResponseDTO>> buscarFuncionariosPorUnidade(@PathVariable Long workplaceId) {
+        List<EmployeeResponseDTO> response = employeeService.buscarEmployeesPorUnidade(workplaceId);
         return ResponseEntity.ok(response);
     }
 }

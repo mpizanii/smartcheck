@@ -55,6 +55,17 @@ public class EmployeeService {
         return responseList;
     }
 
+    public List<EmployeeResponseDTO> buscarEmployeesPorUnidade(Long workplaceId) {
+        List<Employee> employees = employeeRepository.findByWorkplaceId(workplaceId);
+
+        List<EmployeeResponseDTO> responseList = employees.stream()
+            .map(this::converterParaResponseDTO)
+            .toList();
+
+        return responseList;
+    }
+
+
     private EmployeeResponseDTO converterParaResponseDTO(Employee employee){
         return new EmployeeResponseDTO(
             employee.getId(),

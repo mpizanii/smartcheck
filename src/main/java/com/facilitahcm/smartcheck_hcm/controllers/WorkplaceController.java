@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/workplace")
+@RequestMapping("/api/workplaces")
 public class WorkplaceController {
     private final WorkplaceService workplaceService;
 
@@ -34,5 +35,8 @@ public class WorkplaceController {
     }
 
     @GetMapping
-    public void buscarUnidade(){ }
+    public ResponseEntity<List<WorkplaceResponseDTO>> buscarUnidades(){
+        List<WorkplaceResponseDTO> response = workplaceService.buscarUnidades();
+        return ResponseEntity.ok(response);
+    }
 }

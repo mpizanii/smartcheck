@@ -8,6 +8,8 @@ import com.facilitahcm.smartcheck_hcm.repositories.WorkplaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
@@ -32,6 +34,16 @@ public class WorkplaceService {
         Workplace saved = workplaceRepository.save(workplace);
 
         return converterParaResponseDTO(saved);
+    }
+
+    public List<WorkplaceResponseDTO> buscarUnidades(){
+        List<Workplace> workplaces = workplaceRepository.findAll();
+
+        List<WorkplaceResponseDTO> responseDTOs = workplaces.stream()
+            .map(this::converterParaResponseDTO)
+            .toList();
+
+        return responseDTOs;
     }
 
     private WorkplaceResponseDTO converterParaResponseDTO(Workplace workplace){
