@@ -23,7 +23,6 @@ public class DiariaService {
             return true;
         } else if (employee.getTipoTrabalho() == TipoTrabalho.HIBRIDO) {
             Optional<Diaria> diaria = diariaRepository.findDiariaByDataAndEmployee_Id(data, employee.getId());
-            System.out.println("Diaria encontrada: " + diaria);
             if (diaria.isPresent()) {
                 return diaria.get().getModoDiaria() == ModoDiaria.ESCRITORIO;
             }
