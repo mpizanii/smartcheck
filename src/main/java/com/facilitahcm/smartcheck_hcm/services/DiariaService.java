@@ -25,9 +25,6 @@ public class DiariaService {
             Optional<Diaria> diaria = diariaRepository.findDiariaByDataAndEmployee_Id(data, employee.getId());
             System.out.println("Diaria encontrada: " + diaria);
             if (diaria.isPresent()) {
-                System.out.println("Modo da diaria: " + diaria.get().getModoDiaria());
-                boolean deve = diaria.get().getModoDiaria() == ModoDiaria.ESCRITORIO;
-                System.out.println("Retorno: " + deve);
                 return diaria.get().getModoDiaria() == ModoDiaria.ESCRITORIO;
             }
         }
