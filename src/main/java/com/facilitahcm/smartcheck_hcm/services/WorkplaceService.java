@@ -46,6 +46,13 @@ public class WorkplaceService {
         return responseDTOs;
     }
 
+    public WorkplaceResponseDTO buscarUnidadePorId(Long id) {
+        Workplace workplace = workplaceRepository.findWorkplaceById(id)
+            .orElseThrow(() -> new BusinessException("Unidade com id " + id + " não encontrada."));
+
+        return converterParaResponseDTO(workplace);
+    }
+
     private WorkplaceResponseDTO converterParaResponseDTO(Workplace workplace){
         return new WorkplaceResponseDTO(
             workplace.getId(),

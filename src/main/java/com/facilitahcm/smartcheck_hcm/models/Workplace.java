@@ -28,7 +28,7 @@ public class Workplace {
     private Double longitude;
 
     @Column(name = "raio_metros", nullable = false)
-    private Integer raioMetros;
+    private Double raioMetros;
 
     @OneToMany(mappedBy = "workplace", fetch = FetchType.LAZY) // mappedBy = representa o campo da outra tabela | FetchType.Lazy = evita trazer a lista sem eu chamar exatamente ela
     @Builder.Default // Evita que o Lombok builder ignore essa inicialização

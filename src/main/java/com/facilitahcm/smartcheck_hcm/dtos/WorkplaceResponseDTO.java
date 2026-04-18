@@ -8,5 +8,5 @@ public record WorkplaceResponseDTO(
         Double latitude,
         Double longitude,
         @JsonProperty("raio_metros")
-        Integer raioMetros
+        Double raioMetros
 ) { }

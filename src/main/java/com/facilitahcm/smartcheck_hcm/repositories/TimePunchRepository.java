@@ -8,5 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TimePunchRepository extends JpaRepository<TimePunch, Long> {
-    List<TimePunch> findAllByEmployeeId(Long employeeId);
+    List<TimePunch> findAllByEmployee_Id(Long employeeId);
+    Optional<TimePunch> findTopByEmployee_IdOrderByDataHoraDesc(Long employeeId); // "Optional" trata de casos que não houver ponto batido ainda; "_" Deixa explícito que está filtrando pelo id da relação employee
 }

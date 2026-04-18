@@ -18,5 +18,5 @@ public record WorkplaceRequestDTO(
 
         @NotNull(message = "O raio de distância é obrigatório")
         @Positive(message = "O raio deve ser um valor maior que zero")
-        Integer raio
+        Double raio
 ) { }

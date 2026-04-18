@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EmployeeService {
@@ -63,6 +64,14 @@ public class EmployeeService {
             .toList();
 
         return responseList;
+    }
+
+    // Usado em TimePunchService
+    public Employee buscarEmployeePorId(Long id) {
+        Employee employee = employeeRepository.findByIdWithWorkplace(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee " + id + " não encontrado."));
+
+        return employee;
     }
 
 

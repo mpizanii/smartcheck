@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public interface WorkplaceRepository extends JpaRepository<Workplace, Long> {
     Optional<Workplace> findByNome(String nome);
+    Optional<Workplace> findWorkplaceById(Long id);
     boolean existsByNome(String nome);
-
     @Query("SELECT DISTINCT w FROM Workplace w LEFT JOIN FETCH w.employees ") // Evita problema de N + 1 query
     List<Workplace> findAllWithEmployees();
 }

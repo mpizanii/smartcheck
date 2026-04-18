@@ -11,6 +11,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByMatricula(String matricula);
     boolean existsByMatricula(String matricula);
 
+    @Query("SELECT e FROM Employee e JOIN FETCH e.workplace WHERE e.id = :id")
+    Optional<Employee> findByIdWithWorkplace(Long id);
+
     @Query("SELECT e FROM Employee e JOIN FETCH e.workplace")
     List<Employee> findAllWithWorkplace();
 
