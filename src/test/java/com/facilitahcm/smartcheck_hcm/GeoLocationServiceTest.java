@@ -1,14 +1,91 @@
 package com.facilitahcm.smartcheck_hcm;
 
+import com.facilitahcm.smartcheck_hcm.dtos.NominatimResponseReverseDTO;
+import com.facilitahcm.smartcheck_hcm.dtos.NominatimResponseSearchDTO;
+import com.facilitahcm.smartcheck_hcm.exceptions.ExternalServiceException;
+import com.facilitahcm.smartcheck_hcm.exceptions.ResourceNotFoundException;
 import com.facilitahcm.smartcheck_hcm.services.GeolocationService;
 import com.facilitahcm.smartcheck_hcm.utils.GeoUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.net.URI;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class GeoLocationServiceTest {
-    private final GeolocationService geolocationService = new GeolocationService();
+    @Mock
+    private RestTemplate restTemplate;
+
+    @InjectMocks
+    private GeolocationService geolocationService;
+
+    @Test
+    void deveRetornarCoordenadas_quandoNominatimResponderComSucesso() {
+        NominatimResponseSearchDTO esperado = new NominatimResponseSearchDTO("-23.5", "-46.6", "Paulista", "Avenida Paulista");
+
+        when(restTemplate.exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(NominatimResponseSearchDTO[].class)
+        )).thenReturn(ResponseEntity.ok(new NominatimResponseSearchDTO[]{esperado}));
+
+        NominatimResponseSearchDTO resultado = geolocationService.obterCoordenadas("Avenida Paulista, 1000");
+
+        assertEquals(esperado, resultado);
+    }
+
+    @Test
+    void deveLancarResourceNotFound_quandoNominatimRetornarListaVazia() {
+        when(restTemplate.exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(NominatimResponseSearchDTO[].class)
+        )).thenReturn(ResponseEntity.ok(new NominatimResponseSearchDTO[]{}));
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> geolocationService.obterCoordenadas("Endereco inexistente"));
+    }
+
+    @Test
+    void deveLancarExternalServiceException_quandoFalharConsultaNoNominatim() {
+        when(restTemplate.exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(NominatimResponseSearchDTO[].class)
+        )).thenThrow(new RestClientException("timeout"));
+
+        assertThrows(ExternalServiceException.class,
+                () -> geolocationService.obterCoordenadas("Avenida Paulista"));
+    }
+
+    @Test
+    void deveLancarResourceNotFound_quandoReverseRetornarBodyNulo() {
+        when(restTemplate.exchange(
+                any(URI.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(NominatimResponseReverseDTO.class)
+        )).thenReturn(ResponseEntity.ok(null));
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> geolocationService.buscarEnderecoPorCoordenadas(-23.55, -46.63));
+    }
 
     @Test
     void deveRetornarFalse_quandoMesmoPonto() {

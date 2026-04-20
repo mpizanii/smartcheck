@@ -22,6 +22,15 @@ public class Workplace {
     private String nome;
 
     @Column(nullable = false)
+    private String logradouro;
+
+    @Column(nullable = false)
+    private String cidade;
+
+    @Column(nullable = false)
+    private String estado;
+
+    @Column(nullable = false)
     private Double latitude;
 
     @Column(nullable = false)

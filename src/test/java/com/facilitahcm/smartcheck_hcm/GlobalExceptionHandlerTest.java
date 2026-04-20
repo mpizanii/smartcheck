@@ -1,6 +1,7 @@
 package com.facilitahcm.smartcheck_hcm;
 
 import com.facilitahcm.smartcheck_hcm.exceptions.BusinessException;
+import com.facilitahcm.smartcheck_hcm.exceptions.ExternalServiceException;
 import com.facilitahcm.smartcheck_hcm.exceptions.GlobalExceptionHandler;
 import com.facilitahcm.smartcheck_hcm.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -37,10 +38,19 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void deveRetornar503_quandoExternalServiceException() {
+        ResponseEntity<String> response = handler.handleExternalService(new ExternalServiceException("Servico externo indisponivel"));
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        assertEquals("Servico externo indisponivel", response.getBody());
+    }
+
+    @Test
     void deveRetornar500_quandoErroGenerico() {
         ResponseEntity<String> response = handler.handleGeneral(new RuntimeException("falha inesperada"));
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertTrue(response.getBody().contains("Erro interno no servidor"));
     }
 

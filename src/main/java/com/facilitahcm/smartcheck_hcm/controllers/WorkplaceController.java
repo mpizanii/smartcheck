@@ -1,7 +1,7 @@
 package com.facilitahcm.smartcheck_hcm.controllers;
 
-import com.facilitahcm.smartcheck_hcm.dtos.WorkplaceRequestDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.WorkplaceResponseDTO;
+import com.facilitahcm.smartcheck_hcm.dtos.*;
+import com.facilitahcm.smartcheck_hcm.services.GeolocationService;
 import com.facilitahcm.smartcheck_hcm.services.WorkplaceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +16,12 @@ import java.util.List;
 @RequestMapping("/api/workplaces")
 public class WorkplaceController {
     private final WorkplaceService workplaceService;
+    private final GeolocationService geolocationService;
 
     @Autowired
-    public WorkplaceController(WorkplaceService workplaceService){
+    public WorkplaceController(WorkplaceService workplaceService, GeolocationService geolocationService){
         this.workplaceService = workplaceService;
+        this.geolocationService = geolocationService;
     }
 
     @PostMapping
@@ -32,6 +34,20 @@ public class WorkplaceController {
                 .toUri();
 
         return ResponseEntity.created(uri).body(response);
+    }
+
+    @GetMapping("/preview-address")
+    public ResponseEntity<NominatimResponseSearchDTO> previewEndereco(@RequestParam String endereco) {
+        var sugestao = geolocationService.obterCoordenadas(endereco);
+
+        return ResponseEntity.ok(sugestao);
+    }
+
+    @GetMapping("/reverse-geocoding")
+    public ResponseEntity<NominatimResponseReverseDTO> reverseGeocoding(@RequestParam Double latitude, @RequestParam Double longitude) {
+        var endereco = geolocationService.buscarEnderecoPorCoordenadas(latitude, longitude);
+
+        return ResponseEntity.ok(endereco);
     }
 
     @GetMapping

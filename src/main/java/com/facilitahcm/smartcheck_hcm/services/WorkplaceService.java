@@ -24,10 +24,16 @@ public class WorkplaceService {
             throw new BusinessException("Já existe uma unidade com o nome: " + dto.nome());
         }
 
+        double latitude = Double.parseDouble(dto.latitude());
+        double longitude = Double.parseDouble(dto.longitude());
+
         Workplace workplace = Workplace.builder()
                 .nome(dto.nome())
-                .latitude(dto.latitude())
-                .longitude(dto.longitude())
+                .logradouro(dto.logradouro())
+                .cidade(dto.cidade())
+                .estado(dto.estado())
+                .latitude(latitude)
+                .longitude(longitude)
                 .raioMetros(dto.raio())
                 .build();
 
@@ -59,6 +65,9 @@ public class WorkplaceService {
             workplace.getNome(),
             workplace.getLatitude(),
             workplace.getLongitude(),
+            workplace.getCidade(),
+            workplace.getLogradouro(),
+            workplace.getEstado(),
             workplace.getRaioMetros()
         );
     }

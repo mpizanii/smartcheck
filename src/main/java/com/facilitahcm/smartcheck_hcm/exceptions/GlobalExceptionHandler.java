@@ -22,6 +22,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
+    // Erro no serviço externo
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<String> handleExternalService(ExternalServiceException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<List<String>> handleValidation(MethodArgumentNotValidException ex) {
         List<String> erros = ex.getBindingResult()

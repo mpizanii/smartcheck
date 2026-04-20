@@ -7,6 +7,9 @@ public record WorkplaceResponseDTO(
         String nome,
         Double latitude,
         Double longitude,
+        String cidade,
+        String logradouro,
+        String estado,
         @JsonProperty("raio_metros")
         Double raioMetros
 ) { }

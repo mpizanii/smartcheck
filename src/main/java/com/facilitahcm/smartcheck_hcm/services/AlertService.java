@@ -16,7 +16,7 @@ public class AlertService {
     }
 
     public AlertResponseDTO criarAlertaDuplicado(TimePunch timePunch, TimePunch ultimoPonto) {
-        String message = "Ponto duplicado entre " + timePunch.getId() + " e " + ultimoPonto.getId();
+        String message = "Ponto duplicado entre o ponto" + timePunch.getId() + " e o ponto" + ultimoPonto.getId() + "do funcionário " + timePunch.getEmployee().getNome();
 
         Alert alert = Alert.builder()
                 .timePunch(timePunch)
