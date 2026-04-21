@@ -1,7 +1,11 @@
 package com.facilitahcm.smartcheck_hcm.exceptions;
 
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,6 +41,31 @@ public class GlobalExceptionHandler {
                 .toList();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erros);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFound(UsernameNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(UsernameExistsException.class)
+    public ResponseEntity<String> handleUserExists(UsernameExistsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário com esse login já existe: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(JWTCreationException.class)
+    public ResponseEntity<String> handleJWTCreation(JWTCreationException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar token JWT: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(UserNotAuthenticatedException.class)
+    public ResponseEntity<String> handleUserNotAuthenticated(UserNotAuthenticatedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Credenciais incorretas para o usuário " + ex.getMessage());
     }
 
     // Para outros erros, retorne 500 internal server error

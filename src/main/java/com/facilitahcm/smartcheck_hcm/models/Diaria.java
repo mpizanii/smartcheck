@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 public class Diaria {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
