@@ -7,6 +7,8 @@ import com.facilitahcm.smartcheck_hcm.models.TimePunch;
 import com.facilitahcm.smartcheck_hcm.repositories.AlertRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AlertService {
     private final AlertRepository alertRepository;
@@ -45,6 +47,16 @@ public class AlertService {
         Alert saved = alertRepository.save(alert);
 
         return converterParaDto(saved);
+    }
+
+    public List<AlertResponseDTO> buscarAlertas() {
+        List<Alert> alerts = alertRepository.findAll();
+
+        List<AlertResponseDTO> responseDTOS = alerts.stream()
+                .map(this::converterParaDto)
+                .toList();
+
+        return responseDTOS;
     }
 
     private AlertResponseDTO converterParaDto(Alert alert) {
