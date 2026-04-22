@@ -24,7 +24,7 @@ public class EmployeeController {
     
     @PostMapping
     public ResponseEntity<EmployeeResponseDTO> cadastrarFuncionario(@Valid @RequestBody EmployeeRequestDTO employeeRequest){
-        EmployeeResponseDTO response = employeeService.criarEmployee(employeeRequest);
+        EmployeeResponseDTO response = employeeService.cadastrarEmployee(employeeRequest);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")

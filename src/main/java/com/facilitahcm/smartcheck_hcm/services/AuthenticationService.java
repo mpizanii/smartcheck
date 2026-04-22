@@ -2,7 +2,6 @@ package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.LoginRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.RegisterRequestDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.RegisterResponseDTO;
 import com.facilitahcm.smartcheck_hcm.exceptions.UsernameExistsException;
 import com.facilitahcm.smartcheck_hcm.models.Users;
 import com.facilitahcm.smartcheck_hcm.repositories.UsersRepository;
@@ -41,7 +40,7 @@ public class AuthenticationService {
         }
     }
 
-    public RegisterResponseDTO cadastrarUsuario(RegisterRequestDTO registerRequestDTO) {
+    public Users cadastrarUsuario(RegisterRequestDTO registerRequestDTO) {
         if (usersRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
             throw new UsernameExistsException("Usuário com esse login já existe: " + registerRequestDTO.login());
         }
@@ -49,11 +48,6 @@ public class AuthenticationService {
         String senhaHash = passwordEncoder.encode(registerRequestDTO.password());
         Users user = new Users(registerRequestDTO.login(), senhaHash, registerRequestDTO.tipoUsuario());
 
-        usersRepository.save(user);
-
-        return new RegisterResponseDTO(user.getUsername(), user.getTipoUsuario());
+        return usersRepository.save(user);
     }
-
-
-
 }

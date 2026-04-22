@@ -2,12 +2,15 @@ package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.EmployeeRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.EmployeeResponseDTO;
+import com.facilitahcm.smartcheck_hcm.dtos.RegisterRequestDTO;
 import com.facilitahcm.smartcheck_hcm.exceptions.BusinessException;
 import com.facilitahcm.smartcheck_hcm.exceptions.ResourceNotFoundException;
 import com.facilitahcm.smartcheck_hcm.models.Employee;
+import com.facilitahcm.smartcheck_hcm.models.Users;
 import com.facilitahcm.smartcheck_hcm.models.Workplace;
 import com.facilitahcm.smartcheck_hcm.repositories.EmployeeRepository;
 import com.facilitahcm.smartcheck_hcm.repositories.WorkplaceRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,27 +21,30 @@ import java.util.Optional;
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final WorkplaceRepository workplaceRepository;
+    private final AuthenticationService authenticationService;
 
     @Autowired
-    public EmployeeService(EmployeeRepository employeeRepository, WorkplaceRepository workplaceRepository){
+    public EmployeeService(EmployeeRepository employeeRepository, WorkplaceRepository workplaceRepository, AuthenticationService authenticationService){
         this.employeeRepository = employeeRepository;
         this.workplaceRepository = workplaceRepository;
+        this.authenticationService = authenticationService;
     }
 
-    public EmployeeResponseDTO criarEmployee(EmployeeRequestDTO dto){
-        if (employeeRepository.existsByMatricula(dto.matricula())) {
-            throw new BusinessException("Matrícula " + dto.matricula() + "já existente.");
-        }
-
+    @Transactional
+    public EmployeeResponseDTO cadastrarEmployee(EmployeeRequestDTO dto){
         Workplace workplace = workplaceRepository.findById(dto.workplaceId())
             .orElseThrow(() -> new ResourceNotFoundException("Workplace " + dto.workplaceId() + "não encontrado."));
 
+        RegisterRequestDTO userData = new RegisterRequestDTO(dto.login(), dto.password(), dto.tipoUsuario());
+
+        Users user = authenticationService.cadastrarUsuario(userData);
+
         Employee employee = Employee.builder()
             .nome(dto.nome())
-            .matricula(dto.matricula())
             .cargo(dto.cargo())
             .workplace(workplace)
             .tipoTrabalho(dto.tipoTrabalho())
+            .user(user)
             .build();
 
         Employee saved = employeeRepository.save(employee);
@@ -74,16 +80,24 @@ public class EmployeeService {
         return employee;
     }
 
+    public Employee buscarEmployeePorLogin(String login) {
+        Employee employee = employeeRepository.findByUserLogin(login)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee com login " + login + " não encontrado."));
+
+        return employee;
+    }
+
 
     private EmployeeResponseDTO converterParaResponseDTO(Employee employee){
         return new EmployeeResponseDTO(
             employee.getId(),
             employee.getNome(),
-            employee.getMatricula(),
             employee.getCargo(),
             employee.getWorkplace().getId(),
             employee.getWorkplace().getNome(),
-            employee.getTipoTrabalho()
+            employee.getTipoTrabalho(),
+            employee.getUser().getLogin(),
+            employee.getUser().getTipoUsuario()
         );
     }
 }

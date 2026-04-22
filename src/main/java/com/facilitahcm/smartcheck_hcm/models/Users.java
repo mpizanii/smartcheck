@@ -31,6 +31,9 @@ public class Users implements UserDetails {
     @Enumerated(EnumType.STRING)
     private TipoUsuario tipoUsuario;
 
+    @OneToOne(mappedBy = "user")
+    private Employee employee;
+
     public Users(String login, String password, TipoUsuario tipoUsuario) {
         this.login = login;
         this.tipoUsuario = tipoUsuario;

@@ -2,7 +2,6 @@ package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.LoginRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.RegisterRequestDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.RegisterResponseDTO;
 import com.facilitahcm.smartcheck_hcm.enums.TipoUsuario;
 import com.facilitahcm.smartcheck_hcm.exceptions.UsernameExistsException;
 import com.facilitahcm.smartcheck_hcm.models.Users;
@@ -46,7 +45,7 @@ class AuthenticationServiceTest {
     @Test
     void deveRetornarToken_quandoLoginForValido() {
         LoginRequestDTO request = new LoginRequestDTO("joao", "123456");
-        Users user = criarUsuario("joao", TipoUsuario.ADMIN);
+        Users user = criarUsuarioAdmin();
         Authentication authentication = mock(Authentication.class);
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
@@ -86,10 +85,10 @@ class AuthenticationServiceTest {
         when(passwordEncoder.encode("123456")).thenReturn("hash-da-senha");
         when(usersRepository.save(any(Users.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        RegisterResponseDTO response = authenticationService.cadastrarUsuario(request);
+        Users response = authenticationService.cadastrarUsuario(request);
 
-        assertEquals("joao", response.login());
-        assertEquals(TipoUsuario.EMPLOYEE, response.tipoUsuario());
+        assertEquals("joao", response.getLogin());
+        assertEquals(TipoUsuario.EMPLOYEE, response.getTipoUsuario());
 
         ArgumentCaptor<Users> userCaptor = ArgumentCaptor.forClass(Users.class);
         verify(usersRepository).save(userCaptor.capture());
@@ -104,7 +103,7 @@ class AuthenticationServiceTest {
     @Test
     void deveLancarUsernameExistsException_quandoLoginJaExistir() {
         RegisterRequestDTO request = new RegisterRequestDTO("joao", "123456", TipoUsuario.EMPLOYEE);
-        Users usuarioExistente = criarUsuario("joao", TipoUsuario.ADMIN);
+        Users usuarioExistente = criarUsuarioAdmin();
 
         when(usersRepository.findByLogin("joao")).thenReturn(Optional.of(usuarioExistente));
 
@@ -118,12 +117,12 @@ class AuthenticationServiceTest {
         verify(passwordEncoder, never()).encode(any());
     }
 
-    private Users criarUsuario(String login, TipoUsuario tipoUsuario) {
+    private Users criarUsuarioAdmin() {
         return Users.builder()
                 .id(1L)
-                .login(login)
+                .login("joao")
                 .password("hash")
-                .tipoUsuario(tipoUsuario)
+                .tipoUsuario(TipoUsuario.ADMIN)
                 .build();
     }
 }

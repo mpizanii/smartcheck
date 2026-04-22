@@ -1,7 +1,5 @@
 package com.facilitahcm.smartcheck_hcm.controllers;
 
-import com.facilitahcm.smartcheck_hcm.dtos.RegisterResponseDTO;
-import com.facilitahcm.smartcheck_hcm.enums.TipoUsuario;
 import com.facilitahcm.smartcheck_hcm.services.AuthenticationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,25 +45,6 @@ class AuthenticationControllerTest {
                 .andExpect(jsonPath("$.token").value("jwt-token"));
     }
 
-    @Test
-    void deveCadastrarUsuario_quandoRequestForValida() throws Exception {
-        when(authenticationService.cadastrarUsuario(any()))
-                .thenReturn(new RegisterResponseDTO("joao", TipoUsuario.EMPLOYEE));
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "login": "joao",
-                                  "password": "123456",
-                                  "tipoUsuario": "EMPLOYEE"
-                                }
-                                """))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", endsWith("/api/auth/register/joao")))
-                .andExpect(jsonPath("$.login").value("joao"))
-                .andExpect(jsonPath("$.tipoUsuario").value("EMPLOYEE"));
-    }
 }
 
 

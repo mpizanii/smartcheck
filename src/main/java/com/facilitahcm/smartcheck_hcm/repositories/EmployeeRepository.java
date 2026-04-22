@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    Optional<Employee> findByMatricula(String matricula);
-    boolean existsByMatricula(String matricula);
+    Optional<Employee> findByUserLogin(String login);
 
     @Query("SELECT e FROM Employee e JOIN FETCH e.workplace WHERE e.id = :id")
     Optional<Employee> findByIdWithWorkplace(Long id);

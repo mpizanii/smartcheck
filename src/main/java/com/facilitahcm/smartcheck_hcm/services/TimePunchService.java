@@ -5,9 +5,13 @@ import com.facilitahcm.smartcheck_hcm.dtos.TimePunchResponseDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.WorkplaceResponseDTO;
 import com.facilitahcm.smartcheck_hcm.models.Employee;
 import com.facilitahcm.smartcheck_hcm.models.TimePunch;
+import com.facilitahcm.smartcheck_hcm.models.Users;
 import com.facilitahcm.smartcheck_hcm.repositories.TimePunchRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,8 +36,10 @@ public class TimePunchService {
 
     @Transactional
     public TimePunchResponseDTO baterPonto(TimePunchRequestDTO timePunchRequest) {
-        Optional<TimePunch> ultimoPonto = timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(timePunchRequest.employeeId());
-        Employee employee = employeeService.buscarEmployeePorId(timePunchRequest.employeeId());
+        String login = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Employee employee = employeeService.buscarEmployeePorLogin(login);
+        Optional<TimePunch> ultimoPonto = timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId());
         LocalDateTime dataHoraAtual = LocalDateTime.now();
 
         TimePunch timePunch = TimePunch.builder()

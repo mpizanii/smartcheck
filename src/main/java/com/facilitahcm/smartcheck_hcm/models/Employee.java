@@ -19,15 +19,16 @@ public class Employee {
     @Column(nullable = false, length = 120)
     private String nome;
 
-    @Column(nullable = false, unique = true, length = 30)
-    private String matricula;
-
     @Column(nullable = false, length = 80)
     private String cargo;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "workplace_id", nullable = false)
     private Workplace workplace;
+
+    @OneToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private Users user;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_trabalho", nullable = false, length = 20)

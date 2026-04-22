@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record TimePunchRequestDTO(
-    @NotNull(message = "O ID do funcionário é obrigatório")
-    Long employeeId,
-
     @NotNull(message = "O tipo de batida é obrigatório")
     TipoTimePunch tipoTimePunch,
 

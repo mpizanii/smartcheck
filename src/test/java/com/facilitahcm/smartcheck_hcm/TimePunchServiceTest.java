@@ -3,15 +3,21 @@ package com.facilitahcm.smartcheck_hcm;
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchRequestDTO;
 import com.facilitahcm.smartcheck_hcm.enums.TipoTimePunch;
 import com.facilitahcm.smartcheck_hcm.enums.TipoTrabalho;
+import com.facilitahcm.smartcheck_hcm.enums.TipoUsuario;
 import com.facilitahcm.smartcheck_hcm.models.Employee;
 import com.facilitahcm.smartcheck_hcm.models.TimePunch;
+import com.facilitahcm.smartcheck_hcm.models.Users;
 import com.facilitahcm.smartcheck_hcm.models.Workplace;
 import com.facilitahcm.smartcheck_hcm.repositories.TimePunchRepository;
 import com.facilitahcm.smartcheck_hcm.services.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -40,17 +46,28 @@ class TimePunchServiceTest {
     @Captor
     private ArgumentCaptor<TimePunch> timePunchCaptor;
 
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     void deveSalvarPontoSemAlertas_quandoNaoDuplicadoENaoForaDoRaio() {
-        Long employeeId = 1L;
-        Employee employee = criarEmployee(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployee();
+        autenticarUsuario(login);
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-          employeeId, TipoTimePunch.CHECK_IN, -23.5505, -46.633
+          TipoTimePunch.CHECK_IN, -23.5505, -46.633
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.empty());
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.empty());
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(false);
 
         when(timePunchRepository.save(any(TimePunch.class))).thenAnswer(invocation -> {
@@ -63,7 +80,7 @@ class TimePunchServiceTest {
 
         assertNotNull(response);
         assertEquals(10L, response.id());
-        assertEquals(employeeId, response.employeeId());
+        assertEquals(employee.getId(), response.employeeId());
         assertEquals(TipoTimePunch.CHECK_IN, response.tipoTimePunch());
 
         verify(timePunchRepository).save(timePunchCaptor.capture());
@@ -71,6 +88,7 @@ class TimePunchServiceTest {
         assertEquals(employee, salvo.getEmployee());
         assertNotNull(salvo.getDataHora());
 
+        verify(employeeService).buscarEmployeePorLogin(login);
         verify(alertService, never()).criarAlertaDuplicado(any(), any());
         verify(alertService, never()).criarAlertaDistanciaIncompativel(any());
     }
@@ -78,8 +96,9 @@ class TimePunchServiceTest {
 
     @Test
     void deveGerarAlertaDuplicado_quandoUltimoPontoMenosde5Minutos() {
-        Long employeeId = 1L;
-        Employee employee = criarEmployee(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployee();
+        autenticarUsuario(login);
 
         TimePunch ultimoPonto = TimePunch.builder()
                 .id(99L)
@@ -91,11 +110,11 @@ class TimePunchServiceTest {
                 .build();
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-                employeeId, TipoTimePunch.CHECK_IN, -23.5505, -46.633
+                TipoTimePunch.CHECK_IN, -23.5505, -46.633
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.of(ultimoPonto));
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.of(ultimoPonto));
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(false);
 
         when(timePunchRepository.save(any(TimePunch.class))).thenAnswer(invocation -> {
@@ -111,15 +130,16 @@ class TimePunchServiceTest {
 
     @Test
     void deveGerarAlertaOutOfRange_quandoDeveEstarNoEscritorioEForaDoRaio() {
-        Long employeeId = 1L;
-        Employee employee = criarEmployee(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployee();
+        autenticarUsuario(login);
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-                employeeId, TipoTimePunch.CHECK_IN, -23.5600, -46.6400
+                TipoTimePunch.CHECK_IN, -23.5600, -46.6400
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.empty());
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.empty());
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(true);
         when(geolocationService.isForaDoRaio(anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(true);
 
@@ -136,8 +156,9 @@ class TimePunchServiceTest {
 
     @Test
     void deveSalvarPontoSemAlertas_quandoUltimoPontoMaior5Minutos() {
-        Long employeeId = 1L;
-        Employee employee = criarEmployee(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployee();
+        autenticarUsuario(login);
 
         TimePunch ultimoPonto = TimePunch.builder()
                 .id(99L)
@@ -149,11 +170,11 @@ class TimePunchServiceTest {
                 .build();
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-                employeeId, TipoTimePunch.CHECK_IN, -23.5505, -46.633
+                TipoTimePunch.CHECK_IN, -23.5505, -46.633
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.of(ultimoPonto));
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.of(ultimoPonto));
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(false);
 
         when(timePunchRepository.save(any(TimePunch.class))).thenAnswer(invocation -> {
@@ -169,8 +190,9 @@ class TimePunchServiceTest {
 
     @Test
     void naoDeveGerarAlertaDuplicado_quandoUltimoPontoExatamente5Minutos() {
-        Long employeeId = 1L;
-        Employee employee = criarEmployee(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployee();
+        autenticarUsuario(login);
 
         TimePunch ultimoPonto = TimePunch.builder()
                 .id(99L)
@@ -182,11 +204,11 @@ class TimePunchServiceTest {
                 .build();
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-                employeeId, TipoTimePunch.CHECK_OUT, -23.5505, -46.633
+                TipoTimePunch.CHECK_OUT, -23.5505, -46.633
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.of(ultimoPonto));
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.of(ultimoPonto));
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(false);
         when(timePunchRepository.save(any(TimePunch.class))).thenAnswer(invocation -> {
             TimePunch tp = invocation.getArgument(0);
@@ -201,15 +223,16 @@ class TimePunchServiceTest {
 
     @Test
     void deveSalvarPontoSemAlertas_quandoDeveEstarNoEscritorioEDentroDoRaio () {
-        Long employeeId = 1L;
-        Employee employee = criarEmployee(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployee();
+        autenticarUsuario(login);
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-                employeeId, TipoTimePunch.CHECK_IN, -23.5505, -46.6333
+                TipoTimePunch.CHECK_IN, -23.5505, -46.6333
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.empty());
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.empty());
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(true);
         when(geolocationService.isForaDoRaio(anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(false);
 
@@ -226,15 +249,16 @@ class TimePunchServiceTest {
 
     @Test
     void deveSalvarPontoSemAlertas_quandoEmployeeModoTrabalhoHibridoEDeveEstarNoEscritorioEDentroDoRaio () {
-        Long employeeId = 1L;
-        Employee employee = criarEmployeeModoTrabalhoHibrido(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployeeModoTrabalhoHibrido();
+        autenticarUsuario(login);
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-                employeeId, TipoTimePunch.CHECK_IN, -23.5505, -46.6333
+                TipoTimePunch.CHECK_IN, -23.5505, -46.6333
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.empty());
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.empty());
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(true);
         when(geolocationService.isForaDoRaio(anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyDouble())).thenReturn(false);
 
@@ -251,15 +275,16 @@ class TimePunchServiceTest {
 
     @Test
     void deveSalvarPontoSemAlertas_quandoEmployeeModoTrabalhoHibridoENaoDeveEstarNoEscritorio () {
-        Long employeeId = 1L;
-        Employee employee = criarEmployeeModoTrabalhoHibrido(employeeId);
+        String login = "matheus";
+        Employee employee = criarEmployeeModoTrabalhoHibrido();
+        autenticarUsuario(login);
 
         TimePunchRequestDTO request = new TimePunchRequestDTO(
-                employeeId, TipoTimePunch.CHECK_IN, -50.906847, -87.172896
+                TipoTimePunch.CHECK_IN, -50.906847, -87.172896
         );
 
-        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employeeId)).thenReturn(Optional.empty());
-        when(employeeService.buscarEmployeePorId(employeeId)).thenReturn(employee);
+        when(timePunchRepository.findTopByEmployee_IdOrderByDataHoraDesc(employee.getId())).thenReturn(Optional.empty());
+        when(employeeService.buscarEmployeePorLogin(login)).thenReturn(employee);
         when(diariaService.deveEstarNoEscritorio(eq(employee), any())).thenReturn(false);
 
         when(timePunchRepository.save(any(TimePunch.class))).thenAnswer(invocation -> {
@@ -274,7 +299,16 @@ class TimePunchServiceTest {
         verify(geolocationService, never()).isForaDoRaio(anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyDouble());
     }
 
-    private Employee criarEmployee(Long id) {
+    @Test
+    void deveFalhar_quandoNaoHouverUsuarioAutenticado() {
+        SecurityContextHolder.clearContext();
+        TimePunchRequestDTO request = new TimePunchRequestDTO(TipoTimePunch.CHECK_IN, -23.5505, -46.6333);
+
+        assertThrows(Exception.class, () -> timePunchService.baterPonto(request));
+        verifyNoInteractions(employeeService);
+    }
+
+    private Employee criarEmployee() {
         Workplace workplace = Workplace.builder()
                 .id(100L)
                 .nome("Escritório Matriz")
@@ -284,16 +318,15 @@ class TimePunchServiceTest {
                 .build();
 
         return Employee.builder()
-                .id(id)
+                .id(1L)
                 .nome("Matheus")
-                .matricula("MAT-001")
                 .cargo("Desenvolvedor Java")
                 .workplace(workplace)
                 .tipoTrabalho(TipoTrabalho.PRESENCIAL)
                 .build();
     }
 
-    private Employee criarEmployeeModoTrabalhoHibrido(Long id) {
+    private Employee criarEmployeeModoTrabalhoHibrido() {
         Workplace workplace = Workplace.builder()
                 .id(101L)
                 .nome("Escrritório Hibrido")
@@ -303,13 +336,24 @@ class TimePunchServiceTest {
                 .build();
 
         return Employee.builder()
-                .id(id)
+                .id(1L)
                 .nome("Matheus")
-                .matricula("MAT-001")
                 .cargo("Desenvolvedor Java")
                 .workplace(workplace)
                 .tipoTrabalho(TipoTrabalho.HIBRIDO)
                 .build();
+    }
+
+    private void autenticarUsuario(String login) {
+        Users user = Users.builder()
+                .id(10L)
+                .login(login)
+                .password("hash")
+                .tipoUsuario(TipoUsuario.EMPLOYEE)
+                .build();
+
+        var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
 }
