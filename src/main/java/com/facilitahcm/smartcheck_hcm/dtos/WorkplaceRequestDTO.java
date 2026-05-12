@@ -15,11 +15,15 @@ public record WorkplaceRequestDTO(
         @NotBlank(message = "O estado é obrigatório")
         String estado,
 
-        @NotBlank(message = "A latitude é obrigatória")
-        String latitude,
+        @NotNull(message = "A latitude é obrigatória")
+        @DecimalMin(value = "-90.0", message = "A latitude deve ser maior ou igual a -90")
+        @DecimalMax(value = "90.0", message = "A latitude deve ser menor ou igual a 90")
+        Double latitude,
 
-        @NotBlank(message = "A longitude é obrigatória")
-        String longitude,
+        @NotNull(message = "A longitude é obrigatória")
+        @DecimalMin(value = "-180.0", message = "A longitude deve ser maior ou igual a -180")
+        @DecimalMax(value = "180.0", message = "A longitude deve ser menor ou igual a 180")
+        Double longitude,
 
         @NotNull(message = "O raio de distância é obrigatório")
         @Positive(message = "O raio deve ser um valor maior que zero")
