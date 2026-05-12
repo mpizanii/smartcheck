@@ -2,16 +2,14 @@ package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchResponseDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.WorkplaceResponseDTO;
 import com.facilitahcm.smartcheck_hcm.models.Employee;
 import com.facilitahcm.smartcheck_hcm.models.TimePunch;
-import com.facilitahcm.smartcheck_hcm.models.Users;
 import com.facilitahcm.smartcheck_hcm.repositories.TimePunchRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -63,6 +61,17 @@ public class TimePunchService {
         }
 
         return converterParaDto(saved);
+    }
+
+    public Page<TimePunchResponseDTO> buscarPontos(
+            Long employeeId,
+            LocalDateTime dataHoraInicio,
+            LocalDateTime dataHoraFim,
+            Pageable pageable
+    ) {
+        Page<TimePunch> timePunches = timePunchRepository.buscarPontos(employeeId, dataHoraInicio, dataHoraFim, pageable);
+
+        return timePunches.map(this::converterParaDto);
     }
 
     private TimePunchResponseDTO converterParaDto(TimePunch timePunch) {
