@@ -1,5 +1,6 @@
 package com.facilitahcm.smartcheck_hcm.controllers;
 
+import com.facilitahcm.smartcheck_hcm.dtos.FiltersTimePunchDto;
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchResponseDTO;
 import com.facilitahcm.smartcheck_hcm.services.TimePunchService;
@@ -41,12 +42,10 @@ public class TimePunchController {
 
     @GetMapping
     public ResponseEntity<Page<TimePunchResponseDTO>> consultarPontos(
-            @RequestParam(required = false) Long employeeId,
-            @RequestParam(required = false) LocalDateTime dataHoraInicio,
-            @RequestParam(required = false) LocalDateTime dataHoraFim,
-            @PageableDefault(size = 10, sort = "dataHora", direction = Sort.Direction.DESC) Pageable pageable
-            ) {
-        Page<TimePunchResponseDTO> timePunches = timePunchService.buscarPontos(employeeId, dataHoraInicio, dataHoraFim, pageable);
+           FiltersTimePunchDto filters,
+           @PageableDefault(size = 10, sort = "dataHora", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<TimePunchResponseDTO> timePunches = timePunchService.buscarPontos(filters, pageable);
 
         return ResponseEntity.ok(timePunches);
     }

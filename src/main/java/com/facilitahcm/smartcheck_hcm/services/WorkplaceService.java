@@ -1,11 +1,15 @@
 package com.facilitahcm.smartcheck_hcm.services;
 
+import com.facilitahcm.smartcheck_hcm.dtos.FiltersWorkplaceDto;
 import com.facilitahcm.smartcheck_hcm.dtos.WorkplaceRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.WorkplaceResponseDTO;
 import com.facilitahcm.smartcheck_hcm.exceptions.BusinessException;
 import com.facilitahcm.smartcheck_hcm.models.Workplace;
 import com.facilitahcm.smartcheck_hcm.repositories.WorkplaceRepository;
+import com.facilitahcm.smartcheck_hcm.specifications.WorkplaceSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,21 +43,10 @@ public class WorkplaceService {
         return converterParaResponseDTO(saved);
     }
 
-    public List<WorkplaceResponseDTO> buscarUnidades(){
-        List<Workplace> workplaces = workplaceRepository.findAll();
+    public Page<WorkplaceResponseDTO> buscarUnidades(FiltersWorkplaceDto filters, Pageable pageable){
+        Page<Workplace> workplaces = workplaceRepository.findAll(WorkplaceSpecification.comFiltros(filters), pageable);
 
-        List<WorkplaceResponseDTO> responseDTOs = workplaces.stream()
-            .map(this::converterParaResponseDTO)
-            .toList();
-
-        return responseDTOs;
-    }
-
-    public WorkplaceResponseDTO buscarUnidadePorId(Long id) {
-        Workplace workplace = workplaceRepository.findWorkplaceById(id)
-            .orElseThrow(() -> new BusinessException("Unidade com id " + id + " não encontrada."));
-
-        return converterParaResponseDTO(workplace);
+        return workplaces.map(this::converterParaResponseDTO);
     }
 
     private WorkplaceResponseDTO converterParaResponseDTO(Workplace workplace){

@@ -2,9 +2,12 @@ package com.facilitahcm.smartcheck_hcm.controllers;
 
 import com.facilitahcm.smartcheck_hcm.dtos.EmployeeRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.EmployeeResponseDTO;
+import com.facilitahcm.smartcheck_hcm.dtos.FiltersEmployeeDto;
 import com.facilitahcm.smartcheck_hcm.services.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -35,8 +38,8 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EmployeeResponseDTO>> buscarFuncionarios(){
-        List<EmployeeResponseDTO> response = employeeService.buscarEmployees();
+    public ResponseEntity<Page<EmployeeResponseDTO>> buscarFuncionarios(FiltersEmployeeDto filters, Pageable pageable){
+        Page<EmployeeResponseDTO> response = employeeService.buscarEmployees(filters, pageable);
         return ResponseEntity.ok(response);
     }
 

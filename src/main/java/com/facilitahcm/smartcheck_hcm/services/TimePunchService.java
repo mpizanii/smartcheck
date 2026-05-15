@@ -1,10 +1,12 @@
 package com.facilitahcm.smartcheck_hcm.services;
 
+import com.facilitahcm.smartcheck_hcm.dtos.FiltersTimePunchDto;
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchResponseDTO;
 import com.facilitahcm.smartcheck_hcm.models.Employee;
 import com.facilitahcm.smartcheck_hcm.models.TimePunch;
 import com.facilitahcm.smartcheck_hcm.repositories.TimePunchRepository;
+import com.facilitahcm.smartcheck_hcm.specifications.TimePunchSpecification;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -63,13 +65,8 @@ public class TimePunchService {
         return converterParaDto(saved);
     }
 
-    public Page<TimePunchResponseDTO> buscarPontos(
-            Long employeeId,
-            LocalDateTime dataHoraInicio,
-            LocalDateTime dataHoraFim,
-            Pageable pageable
-    ) {
-        Page<TimePunch> timePunches = timePunchRepository.buscarPontos(employeeId, dataHoraInicio, dataHoraFim, pageable);
+    public Page<TimePunchResponseDTO> buscarPontos(FiltersTimePunchDto filters, Pageable pageable) {
+        Page<TimePunch> timePunches = timePunchRepository.findAll(TimePunchSpecification.comFiltros(filters), pageable);
 
         return timePunches.map(this::converterParaDto);
     }

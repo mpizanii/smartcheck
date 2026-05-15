@@ -5,6 +5,8 @@ import com.facilitahcm.smartcheck_hcm.services.GeolocationService;
 import com.facilitahcm.smartcheck_hcm.services.WorkplaceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -51,8 +53,8 @@ public class WorkplaceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<WorkplaceResponseDTO>> buscarUnidades(){
-        List<WorkplaceResponseDTO> response = workplaceService.buscarUnidades();
+    public ResponseEntity<Page<WorkplaceResponseDTO>> buscarUnidades(FiltersWorkplaceDto filters, Pageable pageable){
+        Page<WorkplaceResponseDTO> response = workplaceService.buscarUnidades(filters, pageable);
         return ResponseEntity.ok(response);
     }
 }

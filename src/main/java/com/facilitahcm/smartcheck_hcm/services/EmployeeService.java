@@ -2,6 +2,7 @@ package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.EmployeeRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.EmployeeResponseDTO;
+import com.facilitahcm.smartcheck_hcm.dtos.FiltersEmployeeDto;
 import com.facilitahcm.smartcheck_hcm.dtos.RegisterRequestDTO;
 import com.facilitahcm.smartcheck_hcm.exceptions.BusinessException;
 import com.facilitahcm.smartcheck_hcm.exceptions.ResourceNotFoundException;
@@ -10,8 +11,11 @@ import com.facilitahcm.smartcheck_hcm.models.Users;
 import com.facilitahcm.smartcheck_hcm.models.Workplace;
 import com.facilitahcm.smartcheck_hcm.repositories.EmployeeRepository;
 import com.facilitahcm.smartcheck_hcm.repositories.WorkplaceRepository;
+import com.facilitahcm.smartcheck_hcm.specifications.EmployeeSpecification;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,14 +56,10 @@ public class EmployeeService {
         return converterParaResponseDTO(saved);
     }
 
-    public List<EmployeeResponseDTO> buscarEmployees() {
-        List<Employee> employees = employeeRepository.findAllWithWorkplace();
+    public Page<EmployeeResponseDTO> buscarEmployees(FiltersEmployeeDto filtersEmployeeDto, Pageable pageable) {
+        Page<Employee> employees = employeeRepository.findAll(EmployeeSpecification.comFiltros(filtersEmployeeDto), pageable);
 
-        List<EmployeeResponseDTO> responseList = employees.stream()
-            .map(this::converterParaResponseDTO)
-            .toList();
-
-        return responseList;
+        return employees.map(this::converterParaResponseDTO);
     }
 
     public List<EmployeeResponseDTO> buscarEmployeesPorUnidade(Long workplaceId) {

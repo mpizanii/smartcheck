@@ -1,10 +1,14 @@
 package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.AlertResponseDTO;
+import com.facilitahcm.smartcheck_hcm.dtos.FiltersAlertsDto;
 import com.facilitahcm.smartcheck_hcm.enums.TipoAlerta;
 import com.facilitahcm.smartcheck_hcm.models.Alert;
 import com.facilitahcm.smartcheck_hcm.models.TimePunch;
 import com.facilitahcm.smartcheck_hcm.repositories.AlertRepository;
+import com.facilitahcm.smartcheck_hcm.specifications.AlertSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,14 +53,10 @@ public class AlertService {
         return converterParaDto(saved);
     }
 
-    public List<AlertResponseDTO> buscarAlertas() {
-        List<Alert> alerts = alertRepository.findAll();
+    public Page<AlertResponseDTO> buscarAlertas(FiltersAlertsDto filters, Pageable pageable) {
+        Page<Alert> alerts = alertRepository.findAll(AlertSpecification.comFiltros(filters), pageable);
 
-        List<AlertResponseDTO> responseDTOS = alerts.stream()
-                .map(this::converterParaDto)
-                .toList();
-
-        return responseDTOS;
+        return alerts.map(this::converterParaDto);
     }
 
     private AlertResponseDTO converterParaDto(Alert alert) {
