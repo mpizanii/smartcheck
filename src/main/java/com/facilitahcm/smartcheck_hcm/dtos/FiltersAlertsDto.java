@@ -10,5 +10,6 @@ public record FiltersAlertsDto (
         TipoAlerta tipoAlerta,
         LocalDateTime dataHoraInicio,
         LocalDateTime dataHoraFim,
-        TipoTimePunch tipoTimePunch
+        TipoTimePunch tipoTimePunch,
+        Boolean resolvido
 ) { }

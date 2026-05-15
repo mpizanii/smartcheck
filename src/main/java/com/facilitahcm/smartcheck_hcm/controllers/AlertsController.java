@@ -1,16 +1,16 @@
 package com.facilitahcm.smartcheck_hcm.controllers;
 
+import com.facilitahcm.smartcheck_hcm.dtos.AlertEditRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.AlertResponseDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.FiltersAlertsDto;
 import com.facilitahcm.smartcheck_hcm.services.AlertService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/alerts")
@@ -22,12 +22,17 @@ public class AlertsController {
     }
 
     @GetMapping()
-    public ResponseEntity<Page<AlertResponseDTO>> buscarAlertas(
-            FiltersAlertsDto filters,
-            @PageableDefault(size = 10, sort = "dataHora", direction = Sort.Direction.DESC) Pageable pageable
-    ){
+    public ResponseEntity<Page<AlertResponseDTO>> buscarAlertas(FiltersAlertsDto filters, @PageableDefault(size = 10, sort = "dataHora", direction = Sort.Direction.DESC) Pageable pageable){
         Page<AlertResponseDTO> alerts = alertService.buscarAlertas(filters, pageable);
 
         return ResponseEntity.ok(alerts);
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<AlertResponseDTO> editarAlerta(@RequestBody @Valid AlertEditRequestDTO alertEditRequestDTO, @PathVariable Long id) {
+        AlertResponseDTO alertResponseDTO = alertService.editarAlerta(alertEditRequestDTO, id);
+
+        return ResponseEntity.ok(alertResponseDTO);
+    }
+
 }

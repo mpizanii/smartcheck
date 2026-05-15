@@ -16,7 +16,8 @@ public class AlertSpecification {
                 .and(porTipoAlerta(filters.tipoAlerta()))
                 .and(porDataHoraInicio(filters.dataHoraInicio()))
                 .and(porDataHoraFim(filters.dataHoraFim()))
-                .and(porTipoTimePunch(filters.tipoTimePunch()));
+                .and(porTipoTimePunch(filters.tipoTimePunch()))
+                .and(porStatus(filters.resolvido()));
     }
 
     private static Specification<Alert> porEmployee(Long employeeId) {
@@ -42,5 +43,10 @@ public class AlertSpecification {
     private static Specification<Alert> porTipoTimePunch(TipoTimePunch tipoTimePunch) {
         return (root, query, cb) -> tipoTimePunch == null ? null
                 : cb.equal(root.get("timePunch").get("tipoTimePunch"), tipoTimePunch);
+    }
+
+    private static Specification<Alert> porStatus(Boolean status) {
+        return (root, query, cb) -> status == null ? null
+                : (status ? cb.isTrue(root.get("resolvido")) : cb.isFalse(root.get("resolvido")));
     }
 }

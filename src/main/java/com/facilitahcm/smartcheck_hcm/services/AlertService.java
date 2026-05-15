@@ -1,17 +1,24 @@
 package com.facilitahcm.smartcheck_hcm.services;
 
+import com.facilitahcm.smartcheck_hcm.dtos.AlertEditRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.AlertResponseDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.FiltersAlertsDto;
 import com.facilitahcm.smartcheck_hcm.enums.TipoAlerta;
+import com.facilitahcm.smartcheck_hcm.exceptions.ResourceNotFoundException;
 import com.facilitahcm.smartcheck_hcm.models.Alert;
 import com.facilitahcm.smartcheck_hcm.models.TimePunch;
 import com.facilitahcm.smartcheck_hcm.repositories.AlertRepository;
 import com.facilitahcm.smartcheck_hcm.specifications.AlertSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AlertService {
@@ -22,7 +29,7 @@ public class AlertService {
     }
 
     public AlertResponseDTO criarAlertaDuplicado(TimePunch timePunch, TimePunch ultimoPonto) {
-        String message = "Ponto duplicado entre o ponto" + timePunch.getId() + " e o ponto" + ultimoPonto.getId() + "do funcionário " + timePunch.getEmployee().getNome();
+        String message = "Ponto duplicado entre o ponto " + timePunch.getId() + " e o ponto " + ultimoPonto.getId() + " do funcionário " + timePunch.getEmployee().getNome();
 
         Alert alert = Alert.builder()
                 .timePunch(timePunch)
@@ -59,6 +66,30 @@ public class AlertService {
         return alerts.map(this::converterParaDto);
     }
 
+    @Transactional
+    public AlertResponseDTO editarAlerta(AlertEditRequestDTO alertEditRequestDTO, Long id) {
+        if (alertEditRequestDTO.resolvido() == null && alertEditRequestDTO.observacao() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nenhum campo para atualizar");
+        }
+
+        Alert alert = alertRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Alerta não encontrado com id: " + id));
+
+        if (alertEditRequestDTO.resolvido() != null && alertEditRequestDTO.resolvido()) {
+            alert.setResolvido(true);
+            alert.setResolvidoEm(LocalDateTime.now());
+        } else if (alertEditRequestDTO.resolvido() != null && !alertEditRequestDTO.resolvido()) {
+            alert.setResolvido(false);
+            alert.setResolvidoEm(null);
+        }
+        if (alertEditRequestDTO.observacao() != null) {
+            alert.setObservacaoAdmin(alertEditRequestDTO.observacao());
+        }
+
+        Alert updated = alertRepository.save(alert);
+
+        return converterParaDto(updated);
+    }
+
     private AlertResponseDTO converterParaDto(Alert alert) {
         return new AlertResponseDTO(
                 alert.getId(),
@@ -67,6 +98,9 @@ public class AlertService {
                 alert.getTimePunch().getDataHora(),
                 alert.getTimePunch().getId(),
                 alert.getTimePunch().getTipoTimePunch(),
+                alert.getResolvido(),
+                alert.getObservacaoAdmin(),
+                alert.getResolvidoEm(),
                 alert.getTimePunch().getEmployee().getId(),
                 alert.getTimePunch().getEmployee().getNome()
         );

@@ -1,4 +1,4 @@
-package com.facilitahcm.smartcheck_hcm;
+package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.TimePunchRequestDTO;
 import com.facilitahcm.smartcheck_hcm.enums.TipoTimePunch;
@@ -9,7 +9,6 @@ import com.facilitahcm.smartcheck_hcm.models.TimePunch;
 import com.facilitahcm.smartcheck_hcm.models.Users;
 import com.facilitahcm.smartcheck_hcm.models.Workplace;
 import com.facilitahcm.smartcheck_hcm.repositories.TimePunchRepository;
-import com.facilitahcm.smartcheck_hcm.services.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

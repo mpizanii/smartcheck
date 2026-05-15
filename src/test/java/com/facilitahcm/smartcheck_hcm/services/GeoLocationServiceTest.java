@@ -1,10 +1,9 @@
-package com.facilitahcm.smartcheck_hcm;
+package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.dtos.NominatimResponseReverseDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.NominatimResponseSearchDTO;
 import com.facilitahcm.smartcheck_hcm.exceptions.ExternalServiceException;
 import com.facilitahcm.smartcheck_hcm.exceptions.ResourceNotFoundException;
-import com.facilitahcm.smartcheck_hcm.services.GeolocationService;
 import com.facilitahcm.smartcheck_hcm.utils.GeoUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

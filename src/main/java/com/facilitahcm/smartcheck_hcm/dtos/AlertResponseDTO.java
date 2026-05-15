@@ -12,6 +12,9 @@ public record AlertResponseDTO(
         LocalDateTime dataHora,
         Long timePunchId,
         TipoTimePunch tipoTimePunch,
+        Boolean resolvido,
+        String observacaoAdmin,
+        LocalDateTime resolvidoEm,
         Long employeeId,
         String employeeName
 ) { }

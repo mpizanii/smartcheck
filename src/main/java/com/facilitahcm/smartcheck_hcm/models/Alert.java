@@ -18,6 +18,9 @@ public class Alert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "time_punch_id", nullable = false)
     private TimePunch timePunch;
@@ -30,12 +33,12 @@ public class Alert {
     private String mensagem;
 
     @Column(nullable = false)
-    private boolean resolvido;
+    private Boolean resolvido = false;
 
-    @Column
+    @Column(name = "observacao_admin", length = 255)
     private String observacaoAdmin;
 
-    @Column
+    @Column(name = "resolvido_em")
     private LocalDateTime resolvidoEm;
 
     @Column(name = "data_hora", nullable = false)

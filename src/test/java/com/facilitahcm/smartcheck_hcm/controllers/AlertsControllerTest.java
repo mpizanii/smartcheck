@@ -55,7 +55,7 @@ class AlertsControllerTest {
         AlertResponseDTO dto = new AlertResponseDTO(
                 2L, TipoAlerta.DUPLICATE, "Ponto duplicado",
                 LocalDateTime.of(2026, 4, 22, 8, 52, 39),
-                35L, TipoTimePunch.CHECK_IN, 9L, "Teste"
+                35L, TipoTimePunch.CHECK_IN, false, null, null, 9L, "Teste"
         );
         Page<AlertResponseDTO> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "dataHora")), 1);
 
@@ -98,7 +98,7 @@ class AlertsControllerTest {
         AlertResponseDTO dto = new AlertResponseDTO(
                 1L, TipoAlerta.OUT_OF_RANGE, "Ponto fora do raio permitido",
                 LocalDateTime.of(2026, 4, 22, 9, 0, 0),
-                34L, TipoTimePunch.CHECK_OUT, 9L, "Teste"
+                34L, TipoTimePunch.CHECK_OUT, false, null, null,9L, "Teste"
         );
         Page<AlertResponseDTO> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "dataHora")), 1);
 

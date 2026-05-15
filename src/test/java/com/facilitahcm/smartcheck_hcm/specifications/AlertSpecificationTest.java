@@ -60,7 +60,7 @@ class AlertSpecificationTest {
         alertRepository.save(criarAlert(timePunch3, TipoAlerta.DUPLICATE, LocalDateTime.of(2026, 4, 22, 9, 5), false, "Alerta 3"));
 
         Page<Alert> page = alertRepository.findAll(
-                AlertSpecification.comFiltros(new FiltersAlertsDto(employee1.getId(), null, null, null, TipoTimePunch.CHECK_OUT)),
+                AlertSpecification.comFiltros(new FiltersAlertsDto(employee1.getId(), null, null, null, TipoTimePunch.CHECK_OUT, false)),
                 PageRequest.of(0, 10, Sort.by("id").ascending())
         );
 
@@ -81,7 +81,7 @@ class AlertSpecificationTest {
         alertRepository.save(criarAlert(timePunch2, TipoAlerta.OUT_OF_RANGE, LocalDateTime.of(2026, 4, 22, 17, 5), false, "Alerta 2"));
 
         Page<Alert> page = alertRepository.findAll(
-                AlertSpecification.comFiltros(new FiltersAlertsDto(null, null, LocalDateTime.of(2026, 4, 22, 8, 0), LocalDateTime.of(2026, 4, 22, 18, 0), null)),
+                AlertSpecification.comFiltros(new FiltersAlertsDto(null, null, LocalDateTime.of(2026, 4, 22, 8, 0), LocalDateTime.of(2026, 4, 22, 18, 0), null, false)),
                 PageRequest.of(1, 1, Sort.by("id").ascending())
         );
 
@@ -126,7 +126,7 @@ class AlertSpecificationTest {
                 .build();
     }
 
-    private Alert criarAlert(TimePunch timePunch, TipoAlerta tipoAlerta, LocalDateTime dataHora, boolean resolvido, String mensagem) {
+    private Alert criarAlert(TimePunch timePunch, TipoAlerta tipoAlerta, LocalDateTime dataHora, Boolean resolvido, String mensagem) {
         return Alert.builder()
                 .timePunch(timePunch)
                 .tipoAlerta(tipoAlerta)

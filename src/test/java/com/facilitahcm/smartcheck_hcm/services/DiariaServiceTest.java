@@ -1,11 +1,10 @@
-package com.facilitahcm.smartcheck_hcm;
+package com.facilitahcm.smartcheck_hcm.services;
 
 import com.facilitahcm.smartcheck_hcm.enums.ModoDiaria;
 import com.facilitahcm.smartcheck_hcm.enums.TipoTrabalho;
 import com.facilitahcm.smartcheck_hcm.models.Diaria;
 import com.facilitahcm.smartcheck_hcm.models.Employee;
 import com.facilitahcm.smartcheck_hcm.repositories.DiariaRepository;
-import com.facilitahcm.smartcheck_hcm.services.DiariaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
