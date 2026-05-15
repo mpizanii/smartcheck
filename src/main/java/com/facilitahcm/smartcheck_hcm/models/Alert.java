@@ -32,6 +32,12 @@ public class Alert {
     @Column(nullable = false)
     private boolean resolvido;
 
+    @Column
+    private String observacaoAdmin;
+
+    @Column
+    private LocalDateTime resolvidoEm;
+
     @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
 }

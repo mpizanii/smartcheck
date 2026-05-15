@@ -9,7 +9,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "diarias")
+@Table(name = "diarias",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_diaria_employee_data",
+                    columnNames = {"employee_id", "data_diaria"}
+            )
+        })
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,10 +27,10 @@ public class Diaria {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "employee_id", nullable = false, unique = true)
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
-    @Column(name = "data_diaria", nullable = false, unique = true)
+    @Column(name = "data_diaria", nullable = false)
     LocalDate data;
 
     @Column(name = "modo_diaria", nullable = false)
