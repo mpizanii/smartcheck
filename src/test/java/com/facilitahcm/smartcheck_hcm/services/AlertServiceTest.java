@@ -1,5 +1,7 @@
 package com.facilitahcm.smartcheck_hcm.services;
 
+import com.facilitahcm.smartcheck_hcm.dtos.AlertBatchEditRequestDTO;
+import com.facilitahcm.smartcheck_hcm.dtos.AlertBatchEditResponseDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.AlertEditRequestDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.AlertResponseDTO;
 import com.facilitahcm.smartcheck_hcm.dtos.FiltersAlertsDto;
@@ -29,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -211,6 +214,134 @@ class AlertServiceTest {
 
         verify(alertRepository).findById(99L);
         verify(alertRepository, never()).save(any());
+    }
+
+    @Test
+    void deveEditarAlertasLote_ComSucesso_TodasAsAtualizacoesRealizadas() {
+        TimePunch timePunch1 = criarTimePunch(35L, TipoTimePunch.CHECK_IN);
+        TimePunch timePunch2 = criarTimePunch(36L, TipoTimePunch.CHECK_OUT);
+
+        Alert alert1 = criarAlertComTimePunch(1L, timePunch1);
+        Alert alert2 = criarAlertComTimePunch(2L, timePunch2);
+
+        AlertBatchEditRequestDTO request = new AlertBatchEditRequestDTO(
+                List.of(1L, 2L),
+                "Revisado e aprovado",
+                true
+        );
+
+        when(alertRepository.findAllById(List.of(1L, 2L)))
+                .thenReturn(List.of(alert1, alert2));
+        when(alertRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AlertBatchEditResponseDTO response = alertService.editarAlertasLote(request);
+
+        assertNotNull(response);
+        assertEquals(2, response.totalSolicitados());
+        assertEquals(2, response.totalResolvidos());
+        assertTrue(response.erros().isEmpty());
+
+        ArgumentCaptor<List<Alert>> captor = ArgumentCaptor.forClass(List.class);
+        verify(alertRepository).saveAll(captor.capture());
+        List<Alert> alertsSalvos = captor.getValue();
+        assertEquals(2, alertsSalvos.size());
+        assertTrue(alertsSalvos.stream().allMatch(Alert::getResolvido));
+        assertTrue(alertsSalvos.stream().allMatch(a -> "Revisado e aprovado".equals(a.getObservacaoAdmin())));
+    }
+
+    @Test
+    void deveEditarAlertasLote_ComAlertasNaoEncontrados() {
+        TimePunch timePunch1 = criarTimePunch(35L, TipoTimePunch.CHECK_IN);
+        Alert alert1 = criarAlertComTimePunch(1L, timePunch1);
+
+        AlertBatchEditRequestDTO request = new AlertBatchEditRequestDTO(
+                List.of(1L, 2L, 3L),
+                "Observação",
+                true
+        );
+
+        when(alertRepository.findAllById(List.of(1L, 2L, 3L)))
+                .thenReturn(List.of(alert1));
+        when(alertRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AlertBatchEditResponseDTO response = alertService.editarAlertasLote(request);
+
+        assertNotNull(response);
+        assertEquals(3, response.totalSolicitados());
+        assertEquals(1, response.totalResolvidos());
+        assertEquals(2, response.erros().size());
+        assertTrue(response.erros().containsKey(2L));
+        assertTrue(response.erros().containsKey(3L));
+        assertEquals("Alerta não encontrado", response.erros().get(2L));
+        assertEquals("Alerta não encontrado", response.erros().get(3L));
+    }
+
+    @Test
+    void deveEditarAlertasLote_ComAlertasJaResolvidos() {
+        TimePunch timePunch1 = criarTimePunch(35L, TipoTimePunch.CHECK_IN);
+        TimePunch timePunch2 = criarTimePunch(36L, TipoTimePunch.CHECK_OUT);
+
+        Alert alert1 = criarAlertComTimePunch(1L, timePunch1);
+        Alert alert2 = criarAlertComTimePunch(2L, timePunch2);
+        alert2.setResolvido(true); // Já resolvido
+        alert2.setResolvidoEm(LocalDateTime.now());
+
+        AlertBatchEditRequestDTO request = new AlertBatchEditRequestDTO(
+                List.of(1L, 2L),
+                "Tentar resolver novamente",
+                true
+        );
+
+        when(alertRepository.findAllById(List.of(1L, 2L)))
+                .thenReturn(List.of(alert1, alert2));
+        when(alertRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AlertBatchEditResponseDTO response = alertService.editarAlertasLote(request);
+
+        assertNotNull(response);
+        assertEquals(2, response.totalSolicitados());
+        assertEquals(1, response.totalResolvidos());
+        assertEquals(1, response.erros().size());
+        assertTrue(response.erros().containsKey(2L));
+        assertEquals("Alerta já estava como resolvido", response.erros().get(2L));
+    }
+
+    @Test
+    void deveEditarAlertasLote_ComMisturaDeErros() {
+        TimePunch timePunch1 = criarTimePunch(35L, TipoTimePunch.CHECK_IN);
+        TimePunch timePunch2 = criarTimePunch(36L, TipoTimePunch.CHECK_OUT);
+        TimePunch timePunch3 = criarTimePunch(37L, TipoTimePunch.CHECK_IN);
+
+        Alert alert1 = criarAlertComTimePunch(1L, timePunch1);
+        Alert alert2 = criarAlertComTimePunch(2L, timePunch2);
+        alert2.setResolvido(true); // Já resolvido
+        alert2.setResolvidoEm(LocalDateTime.now());
+
+        Alert alert3 = criarAlertComTimePunch(3L, timePunch3);
+
+        AlertBatchEditRequestDTO request = new AlertBatchEditRequestDTO(
+                List.of(1L, 2L, 3L, 4L, 5L),
+                "Processamento em lote",
+                true
+        );
+
+        when(alertRepository.findAllById(List.of(1L, 2L, 3L, 4L, 5L)))
+                .thenReturn(List.of(alert1, alert2, alert3));
+        when(alertRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AlertBatchEditResponseDTO response = alertService.editarAlertasLote(request);
+
+        assertNotNull(response);
+        assertEquals(5, response.totalSolicitados());
+        assertEquals(2, response.totalResolvidos()); // alert1 e alert3
+        assertEquals(3, response.erros().size()); // alert2 (já resolvido), 4 e 5 (não encontrados)
+
+        assertTrue(response.erros().containsKey(2L));
+        assertEquals("Alerta já estava como resolvido", response.erros().get(2L));
+        assertTrue(response.erros().containsKey(4L));
+        assertEquals("Alerta não encontrado", response.erros().get(4L));
+        assertTrue(response.erros().containsKey(5L));
+        assertEquals("Alerta não encontrado", response.erros().get(5L));
     }
 
     private Alert criarAlertComTimePunch(Long id, TimePunch timePunch) {

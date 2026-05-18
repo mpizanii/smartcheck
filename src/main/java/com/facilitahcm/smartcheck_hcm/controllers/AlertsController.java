@@ -1,8 +1,6 @@
 package com.facilitahcm.smartcheck_hcm.controllers;
 
-import com.facilitahcm.smartcheck_hcm.dtos.AlertEditRequestDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.AlertResponseDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.FiltersAlertsDto;
+import com.facilitahcm.smartcheck_hcm.dtos.*;
 import com.facilitahcm.smartcheck_hcm.services.AlertService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -33,6 +31,13 @@ public class AlertsController {
         AlertResponseDTO alertResponseDTO = alertService.editarAlerta(alertEditRequestDTO, id);
 
         return ResponseEntity.ok(alertResponseDTO);
+    }
+
+    @PatchMapping
+    public ResponseEntity<AlertBatchEditResponseDTO> editarAlertasLote(@RequestBody @Valid AlertBatchEditRequestDTO alertBatchEditRequestDTO) {
+        AlertBatchEditResponseDTO alertBatchEditResponseDTO = alertService.editarAlertasLote(alertBatchEditRequestDTO);
+
+        return ResponseEntity.ok(alertBatchEditResponseDTO);
     }
 
 }

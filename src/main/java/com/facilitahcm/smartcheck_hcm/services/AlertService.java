@@ -1,8 +1,6 @@
 package com.facilitahcm.smartcheck_hcm.services;
 
-import com.facilitahcm.smartcheck_hcm.dtos.AlertEditRequestDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.AlertResponseDTO;
-import com.facilitahcm.smartcheck_hcm.dtos.FiltersAlertsDto;
+import com.facilitahcm.smartcheck_hcm.dtos.*;
 import com.facilitahcm.smartcheck_hcm.enums.TipoAlerta;
 import com.facilitahcm.smartcheck_hcm.exceptions.ResourceNotFoundException;
 import com.facilitahcm.smartcheck_hcm.models.Alert;
@@ -17,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AlertService {
@@ -88,6 +86,59 @@ public class AlertService {
         Alert updated = alertRepository.save(alert);
 
         return converterParaDto(updated);
+    }
+
+    @Transactional
+    public AlertBatchEditResponseDTO editarAlertasLote(AlertBatchEditRequestDTO alertBatchEditRequestDTO) {
+        List<Long> ids = alertBatchEditRequestDTO.ids().stream().distinct().toList();
+        List<Alert> alerts = alertRepository.findAllById(ids);
+
+        HashMap<Long, String> erros = new HashMap<>();
+        Set<Long> idsEncontrados = alerts.stream().map(Alert::getId).collect(Collectors.toSet());
+        String mensagemAlertaNãoEncontrado = "Alerta não encontrado";
+
+        for (Long id : ids) {
+            if (!idsEncontrados.contains(id)) {
+                erros.put(id, mensagemAlertaNãoEncontrado);
+            }
+        }
+
+        Boolean novoEstado = Boolean.TRUE.equals(alertBatchEditRequestDTO.resolvido());
+        String mensagemAlertaEstadoIgual = novoEstado
+                ? "Alerta já estava como resolvido"
+                : "Alerta já estava como não resolvido";
+
+        LocalDateTime now = novoEstado ? LocalDateTime.now() : null;
+
+        Integer totalAtualizados = 0;
+        List<Alert> alertasParaSalvar = new ArrayList<>();
+
+        for (Alert alert : alerts) {
+            Boolean estadoAtual = Boolean.TRUE.equals(alert.getResolvido());
+
+            if (estadoAtual == novoEstado) {
+                erros.put(alert.getId(), mensagemAlertaEstadoIgual);
+                continue;
+            }
+
+            alert.setResolvido(novoEstado);
+            alert.setObservacaoAdmin(alertBatchEditRequestDTO.observacao());
+            alert.setResolvidoEm(now);
+
+            alertasParaSalvar.add(alert);
+            totalAtualizados++;
+        }
+
+        if (!alertasParaSalvar.isEmpty()) {
+            alertRepository.saveAll(alertasParaSalvar);
+        }
+
+        return new AlertBatchEditResponseDTO(
+                ids.size(),
+                totalAtualizados,
+                erros
+        );
+
     }
 
     private AlertResponseDTO converterParaDto(Alert alert) {
